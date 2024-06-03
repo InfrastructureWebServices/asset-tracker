@@ -10,12 +10,14 @@
 <body>
     <div class="container">
         <h2>Asset Database</h2>
+        {% include 'bread-crumbs.html' %}
+        <div class="divider"></div>
         <table>
             <thead>
                 <tr>
                     <th>QR</th>
                     <th>URL</th>
-                    <th>Description</th>
+                    <th>Name</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,12 +25,11 @@
                 <tr>
                     <td>{{asset_database[asset].qr|safe}}</td>
                     <td><a href="{{ asset_database[asset].url }}">Link</a></td>
-                    <td>{{asset_database[asset].description}}</td>
+                    <td>{{asset_database[asset].name}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        {% include 'footer.html' %}
     </div>
 </body>
 

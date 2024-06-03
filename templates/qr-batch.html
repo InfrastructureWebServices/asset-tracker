@@ -24,6 +24,8 @@
 <body>
     <div class="container">
         <h2>QR Batch</h2>
+        {% include 'bread-crumbs.html' %}
+        <div class="divider"></div>
         <table>
             <thead>
                 <tr>
@@ -45,7 +47,6 @@
                 <button class="btn waves-effect waves-light" onclick="saveText();">Download URLs</button>
             </div>
         </div>
-        {% include 'footer.html' %}
     </div>
 </body>
 

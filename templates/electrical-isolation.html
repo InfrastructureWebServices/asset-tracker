@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Asset</title>
+    {% include 'headers.html' %}
+    {% include 'form-scripts.html' %}
+</head>
+
+<body>
+    <div class="container">
+        <h2>Electrical Isolation</h2>
+        {% include 'bread-crumbs.html' %}
+        <div class="divider"></div>
+        <h3>Details</h3>
+        <div class="divider"></div>
+        {% if asset_data %}
+        <form class="row" action="./update/{{asset_data.id}}" method="post">
+            <div class="col s12 m6 input-field">
+                <input id="id" name="id" type="text" value="{{asset_data.id}}" disabled>
+                <label for="id" >ID</label>
+                <span class="supporting-text">Unique ID</span>
+            </div>
+            {% include 'isolation-permit.html' %}
+            <div class="col s12 m12">
+                <button class="btn waves-effect waves-light" type="submit">Update</button>
+            </div>
+        </form>
+        <div class="divider"></div>
+        <h3>Comments</h3>
+        <div class="divider"></div>
+        <h3>Version History</h3>
+        <div class="divider"></div>
+        <h3>Scan Log</h3>
+        <div class="divider"></div>
+        <h3>Drawings</h3>
+        <div class="divider"></div>
+        <h3>Photos</h3>
+        <div class="divider"></div>
+        {% else %} 
+        <h3>Asset ID Not Found</h3>
+        {% endif %}
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,34 @@
+            <div class="col s12 m6 input-field">
+                <input id="name" name="name" type="text" value="{{asset_data.name}}">
+                <label for="name">Name</label>
+                <span class="supporting-text">Name of the equipment</span>
+            </div>
+            <div class="col s12 m6 input-field">
+                <input id="manufacturer" name="manufacturer" type="text" value="{{asset_data.manufacturer}}">
+                <label for="manufacturer">Manufacturer</label>
+                <span class="supporting-text"></span>
+            </div>
+            <div class="col s12 m6 input-field">
+                <input id="part-number" name="part_number" type="text" value="{{asset_data.part_number}}">
+                <label for="part-number">Part Number</label>
+                <span class="supporting-text">Provided by manufacturer</span>
+            </div>
+            <div class="col s12 m6 input-field">
+                <input id="serial-number" name="serial_number" type="text" value="{{asset_data.serial_number}}">
+                <label for="serial-number">Serial Number</label>
+                <span class="supporting-text">Provided by manufacturer</span>
+            </div>
+            <div class="col s12 input-field ">
+                <textarea name="configuration" id="configuration" class="materialize-textarea">{{asset_data.configuration}}</textarea>
+                <label for="configuration">Configuration</label>
+            </div>
+            <div class="col s12 m6 input-field">
+                <input id="owner" name="owner" type="text" value="{{asset_data.owner}}">
+                <label for="owner">Owner</label>
+                <span class="supporting-text">Or responsible person</span>
+            </div>
+            <div class="col s12 m6 input-field">
+                <input id="location" name="location" type="text" value="{{asset_data.location}}">
+                <label for="location">Location</label>
+                <span class="supporting-text">Address and description of location</span>
+            </div>

@@ -72,6 +72,7 @@ def generate_qr_batch():
         return render_template('generate.html', base_url=base_url)
     elif request.method == "POST":
         data = request.form
+        asset_type = data['type']
         with open('database.json', 'r') as f:
             asset_database = json.loads(f.read())
         csv = ""
@@ -83,8 +84,8 @@ def generate_qr_batch():
             url = generate_url(id)
             csv += "%s\n" % url
             img_str = generate_qr(url)
-            qrs.append({"image": img_str, "url": url})
-            asset_database[id] = { "id": id, "description": "Generated on %s" % timestamp}
+            qrs.append({"image": img_str, "url": url, "type": asset_type})
+            asset_database[id] = { "id": id, "type": asset_type, "description": "Generated on %s" % timestamp}
         with open('database.json', 'w') as f:
             f.write(json.dumps(asset_database, indent='\t'))
         return render_template('qr-batch.html', base_url=base_url, qrs=qrs, csv=csv)
@@ -95,7 +96,10 @@ def asset(uuid):
         asset_database = json.loads(f.read())
     if uuid in asset_database:
         asset_data = asset_database.get(uuid)
-        return render_template('asset.html', base_url=base_url, asset_data=asset_data)
+        if asset_data['type'] == 'equipment':
+            return render_template('equipment.html', base_url=base_url, asset_data=asset_data)
+        elif asset_data['type'] == 'isolation':
+            return render_template('electrical-isolation.html', base_url=base_url, asset_data=asset_data)
     else:
         return render_template('asset.html', base_url=base_url, asset_data=None)
     
@@ -107,7 +111,8 @@ def update_asset(uuid):
         asset_data = asset_database.get(uuid)
         id = asset_data['id']
         data = request.form
-        asset_data['description'] = data['description']
+        for property in data:
+            asset_data[property] = data[property]
         asset_database[id] = asset_data
         with open('database.json', 'w') as f:
             f.write(json.dumps(asset_database, indent='\t'))

@@ -18,6 +18,8 @@
 <body>
     <div class="container">
         <h2>Generate QR Batch</h2>
+        {% include 'bread-crumbs.html' %}
+        <div class="divider"></div>
         <form class="row" action="./generate-qr-batch" method="post">
             <div class="col s12 m6 input-field">
                 <input id="quantity" name="quantity" type="number" value="1">
@@ -27,8 +29,8 @@
             <div class="col s12 m6 input-field">
                 <select id="type" name="type">
                     <option value="" disabled >Selet type</option>
-                    <option value="1" selected>Asset</option>
-                    <option value="2">Lockout</option>
+                    <option value="equipment" selected>Equipment</option>
+                    <option value="isolation">Isolation</option>
                 </select>
                 <label for="type">Type</label>
             </div>
@@ -36,7 +38,6 @@
                 <button class="btn waves-effect waves-light" type="submit">Generate</button>
             </div>
         </form>
-        {% include 'footer.html' %}
     </div>
 </body>
 
