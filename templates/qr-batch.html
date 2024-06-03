@@ -4,7 +4,21 @@
 <head>
     <title>QR Batch</title>
     {% include 'headers.html' %}
+    <script>
+        function saveText() {
+            let data = `{{csv|safe}}`;
+            let file = 'data.csv';
 
+            let link = document.createElement('a');
+            link.download = file;
+            let blob = new Blob(['' + data + ''], {
+                type: 'text/csv'
+            });
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+    </script>
 </head>
 
 <body>
@@ -26,6 +40,12 @@
                 {% endfor %}
             </tbody>
         </table>
+        <div class="row">
+            <div class="col s12 m12">
+                <button class="btn waves-effect waves-light" onclick="saveText();">Download URLs</button>
+            </div>
+        </div>
+        {% include 'footer.html' %}
     </div>
 </body>
 

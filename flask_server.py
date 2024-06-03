@@ -36,9 +36,35 @@ def favicon():
 def send_report(path):
     return send_from_directory('public', path)
 
+domain = "http://localhost:5000/"
+
+def generate_url(id):
+    return '%sassets/%s' % (domain, id)
+
+def generate_qr(url):
+    img = qrcode.make(url)
+    buffered = BytesIO()
+    img.save(buffered, format='png')
+    base64_bytes = base64.b64encode(buffered.getvalue())
+    base64_utf8 = base64_bytes.decode('utf-8')
+    img_str = '<img height="120px" width="120px" src="data:image/png;base64,%s" />' % base64_utf8
+    return img_str
+
 @app.route('/')
 def home():
     return render_template('dashboard.html', base_url=base_url)
+
+@app.route('/show-database')
+def show_database():
+    with open('database.json', 'r') as f:
+        asset_database = json.loads(f.read())
+    for asset in asset_database:
+        asset_data = asset_database[asset]
+        id = asset_data['id']
+        url = generate_url(id)
+        asset_data['url'] = url
+        asset_data['qr'] = generate_qr(url)
+    return render_template('show-database.html', base_url=base_url, asset_database=asset_database)
 
 @app.route('/generate-qr-batch', methods=['GET', 'POST'])
 def generate_qr_batch():
@@ -48,23 +74,20 @@ def generate_qr_batch():
         data = request.form
         with open('database.json', 'r') as f:
             asset_database = json.loads(f.read())
+        csv = ""
         qrs = []
         now = datetime.now()
         timestamp = now.strftime("%A %d/%m/%Y, %H:%M:%S")
         for i in range(0, int(data['quantity'])):
             id = str(uuid.uuid4())
-            url = 'http://localhost:5000/assets/%s' % id
-            img = qrcode.make(url)
-            buffered = BytesIO()
-            img.save(buffered, format='png')
-            base64_bytes = base64.b64encode(buffered.getvalue())
-            base64_utf8 = base64_bytes.decode('utf-8')
-            img_str = '<img src="data:image/png;base64,%s" />' % base64_utf8
+            url = generate_url(id)
+            csv += "%s\n" % url
+            img_str = generate_qr(url)
             qrs.append({"image": img_str, "url": url})
             asset_database[id] = { "id": id, "description": "Generated on %s" % timestamp}
         with open('database.json', 'w') as f:
             f.write(json.dumps(asset_database, indent='\t'))
-        return render_template('qr-batch.html', base_url=base_url, qrs=qrs)
+        return render_template('qr-batch.html', base_url=base_url, qrs=qrs, csv=csv)
     
 @app.route('/assets/<uuid>')
 def asset(uuid):
@@ -88,7 +111,7 @@ def update_asset(uuid):
         asset_database[id] = asset_data
         with open('database.json', 'w') as f:
             f.write(json.dumps(asset_database, indent='\t'))
-        return redirect('assets/%s' % id)
+        return redirect('/assets/%s' % id)
     else:
         return render_template('asset.html', base_url=base_url, asset_data=None)
 

@@ -31,12 +31,3 @@ table {
     text-align: left;
     width: 80lh
 }
-th:nth-child(1) { 
-    width: 150px;
-}
-th:nth-child(3) { 
-    width: 150px;
-}
-th:nth-child(4) { 
-    width: 150px;
-}

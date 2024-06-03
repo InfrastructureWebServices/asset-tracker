@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Asset Database</title>
+    {% include 'headers.html' %}
+
+</head>
+
+<body>
+    <div class="container">
+        <h2>Asset Database</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>QR</th>
+                    <th>URL</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in asset_database %}
+                <tr>
+                    <td>{{asset_database[asset].qr|safe}}</td>
+                    <td><a href="{{ asset_database[asset].url }}">Link</a></td>
+                    <td>{{asset_database[asset].description}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% include 'footer.html' %}
+    </div>
+</body>
+
+</html>
