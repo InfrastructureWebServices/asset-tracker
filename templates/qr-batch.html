@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>QR Batch</title>
+    {% include 'headers.html' %}
+
+</head>
+
+<body>
+    <div class="container">
+        <h2>QR Batch</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>QR</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for qr in qrs %}
+                <tr>
+                    <td>{{qr.image|safe}}</td>
+                    <td><a href="{{ qr.url }}">Link</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

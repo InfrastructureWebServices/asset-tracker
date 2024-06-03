@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Generate QR Batch</title>
+    {% include 'headers.html' %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var elems = document.querySelectorAll('select');
+            var instances = M.FormSelect.init(elems, {
+                // specify options here
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Generate QR Batch</h2>
+        <form class="row" action="./generate-qr-batch" method="post">
+            <div class="col s12 m6 input-field">
+                <input id="quantity" name="quantity" type="number" value="1">
+                <label for="quantity">Quantity</label>
+                <span class="supporting-text">Number to be generated</span>
+            </div>
+            <div class="col s12 m6 input-field">
+                <select id="type" name="type">
+                    <option value="" disabled >Selet type</option>
+                    <option value="1" selected>Asset</option>
+                    <option value="2">Lockout</option>
+                </select>
+                <label for="type">Type</label>
+            </div>
+            <div class="col s12 m12">
+                <button class="btn waves-effect waves-light" type="submit">Generate</button>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

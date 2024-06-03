@@ -10,6 +10,11 @@ import json
 import re
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
+from datetime import datetime
+import qrcode
+import uuid
+import base64
+from io import BytesIO
 
 load_dotenv('.env')
 
@@ -35,10 +40,55 @@ def send_report(path):
 def home():
     return render_template('dashboard.html', base_url=base_url)
 
-@app.route('/generate-qr-batch')
+@app.route('/generate-qr-batch', methods=['GET', 'POST'])
 def generate_qr_batch():
     if request.method == "GET":
         return render_template('generate.html', base_url=base_url)
     elif request.method == "POST":
-        
-        return render_template('qr-batch.html', base_url=base_url)
+        data = request.form
+        with open('database.json', 'r') as f:
+            asset_database = json.loads(f.read())
+        qrs = []
+        now = datetime.now()
+        timestamp = now.strftime("%A %d/%m/%Y, %H:%M:%S")
+        for i in range(0, int(data['quantity'])):
+            id = str(uuid.uuid4())
+            url = 'http://localhost:5000/assets/%s' % id
+            img = qrcode.make(url)
+            buffered = BytesIO()
+            img.save(buffered, format='png')
+            base64_bytes = base64.b64encode(buffered.getvalue())
+            base64_utf8 = base64_bytes.decode('utf-8')
+            img_str = '<img src="data:image/png;base64,%s" />' % base64_utf8
+            qrs.append({"image": img_str, "url": url})
+            asset_database[id] = { "id": id, "description": "Generated on %s" % timestamp}
+        with open('database.json', 'w') as f:
+            f.write(json.dumps(asset_database, indent='\t'))
+        return render_template('qr-batch.html', base_url=base_url, qrs=qrs)
+    
+@app.route('/assets/<uuid>')
+def asset(uuid):
+    with open('database.json', 'r') as f:
+        asset_database = json.loads(f.read())
+    if uuid in asset_database:
+        asset_data = asset_database.get(uuid)
+        return render_template('asset.html', base_url=base_url, asset_data=asset_data)
+    else:
+        return render_template('asset.html', base_url=base_url, asset_data=None)
+    
+@app.route('/assets/update/<uuid>', methods=['POST'])
+def update_asset(uuid):
+    with open('database.json', 'r') as f:
+        asset_database = json.loads(f.read())
+    if uuid in asset_database:
+        asset_data = asset_database.get(uuid)
+        id = asset_data['id']
+        data = request.form
+        asset_data['description'] = data['description']
+        asset_database[id] = asset_data
+        with open('database.json', 'w') as f:
+            f.write(json.dumps(asset_database, indent='\t'))
+        return redirect('assets/%s' % id)
+    else:
+        return render_template('asset.html', base_url=base_url, asset_data=None)
+
