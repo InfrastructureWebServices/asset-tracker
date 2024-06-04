@@ -1,14 +1,8 @@
 # modules
 from flask import Flask, request, Response, redirect, send_from_directory, render_template, send_file, jsonify
-from time import sleep
-import threading
-import queue
-import sys
 import os
 from os import path
 import json
-import re
-import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 from datetime import datetime
 import qrcode
@@ -16,17 +10,32 @@ import uuid
 import base64
 from io import BytesIO
 
+# import xml.etree.ElementTree as ET
+# import threading
+# import queue
+# from time import sleep
+# import sys
+# import re
+
 load_dotenv('.env')
 
-# local modules
-
+# check database json exists, if not create it
+directory = path.dirname(__file__)
+database_path = path.join(directory, 'database.json')
+if not path.exists(database_path):
+    with open(database_path, 'w') as f:
+        f.write('{}')
 
 # flask app
 app = Flask(__name__)
-
-DEBUG = os.environ.get('DEBUG') != None and os.environ.get('DEBUG') == 'true'
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 base_url = "/"
+domain = 'https://www.infrastructurewebservices.com/private/ugl'
+
+# debug variable dependents
+DEBUG = os.environ.get('DEBUG') != None and os.environ.get('DEBUG') == 'true'
+if DEBUG:
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+    domain = "http://localhost:5000/"
 
 @app.route('/favicon.ico')
 def favicon():
@@ -35,8 +44,6 @@ def favicon():
 @app.route('/public/<path:path>')
 def send_report(path):
     return send_from_directory('public', path)
-
-domain = "http://localhost:5000/"
 
 def generate_url(id):
     return '%sassets/%s' % (domain, id)
@@ -56,7 +63,7 @@ def home():
 
 @app.route('/show-database')
 def show_database():
-    with open('database.json', 'r') as f:
+    with open(database_path, 'r') as f:
         asset_database = json.loads(f.read())
     for asset in asset_database:
         asset_data = asset_database[asset]
@@ -73,7 +80,7 @@ def generate_qr_batch():
     elif request.method == "POST":
         data = request.form
         asset_type = data['type']
-        with open('database.json', 'r') as f:
+        with open(database_path, 'r') as f:
             asset_database = json.loads(f.read())
         csv = ""
         qrs = []
@@ -86,13 +93,13 @@ def generate_qr_batch():
             img_str = generate_qr(url)
             qrs.append({"image": img_str, "url": url, "type": asset_type})
             asset_database[id] = { "id": id, "type": asset_type, "description": "Generated on %s" % timestamp}
-        with open('database.json', 'w') as f:
+        with open(database_path, 'w') as f:
             f.write(json.dumps(asset_database, indent='\t'))
         return render_template('qr-batch.html', base_url=base_url, qrs=qrs, csv=csv)
     
 @app.route('/assets/<uuid>')
 def asset(uuid):
-    with open('database.json', 'r') as f:
+    with open(database_path, 'r') as f:
         asset_database = json.loads(f.read())
     if uuid in asset_database:
         asset_data = asset_database.get(uuid)
@@ -105,7 +112,7 @@ def asset(uuid):
     
 @app.route('/assets/update/<uuid>', methods=['POST'])
 def update_asset(uuid):
-    with open('database.json', 'r') as f:
+    with open(database_path, 'r') as f:
         asset_database = json.loads(f.read())
     if uuid in asset_database:
         asset_data = asset_database.get(uuid)
@@ -114,7 +121,7 @@ def update_asset(uuid):
         for property in data:
             asset_data[property] = data[property]
         asset_database[id] = asset_data
-        with open('database.json', 'w') as f:
+        with open(database_path, 'w') as f:
             f.write(json.dumps(asset_database, indent='\t'))
         return redirect('/assets/%s' % id)
     else:
