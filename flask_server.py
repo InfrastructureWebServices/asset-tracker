@@ -29,7 +29,7 @@ if not path.exists(database_path):
 # flask app
 app = Flask(__name__)
 base_url = "/"
-domain = 'https://www.infrastructurewebservices.com/private/ugl'
+domain = 'https://www.infrastructurewebservices.com/private/asset-tracker/'
 
 # debug variable dependents
 DEBUG = os.environ.get('DEBUG') != None and os.environ.get('DEBUG') == 'true'
