@@ -35,6 +35,7 @@ domain = 'https://www.infrastructurewebservices.com/private/asset-tracker/'
 DEBUG = os.environ.get('DEBUG') != None and os.environ.get('DEBUG') == 'true'
 if DEBUG:
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+    base_url = "/"
     domain = "http://localhost:5000/"
 
 @app.route('/favicon.ico')
