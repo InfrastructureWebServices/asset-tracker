@@ -124,7 +124,7 @@ def update_asset(uuid):
         asset_database[id] = asset_data
         with open(database_path, 'w') as f:
             f.write(json.dumps(asset_database, indent='\t'))
-        return redirect('/assets/%s' % id)
+        return redirect('%sassets/%s' % (base_url, id))
     else:
         return render_template('asset.html', base_url=base_url, asset_data=None)
 
