@@ -28,7 +28,7 @@ if not path.exists(database_path):
 
 # flask app
 app = Flask(__name__)
-base_url = "/"
+base_url = "/private/asset-tracker/"
 domain = 'https://www.infrastructurewebservices.com/private/asset-tracker/'
 
 # debug variable dependents
