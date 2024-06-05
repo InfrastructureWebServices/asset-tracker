@@ -8,7 +8,9 @@ from datetime import datetime
 import qrcode
 import uuid
 import base64
-from io import BytesIO
+import csv
+from io import BytesIO, StringIO
+
 
 # import xml.etree.ElementTree as ET
 # import threading
@@ -83,20 +85,23 @@ def generate_qr_batch():
         asset_type = data['type']
         with open(database_path, 'r') as f:
             asset_database = json.loads(f.read())
-        csv = ""
+        csv_data = StringIO()
+        writer = csv.writer(csv_data, delimiter=',', lineterminator=',\n')
+        writer.writerow(['urls'])
         qrs = []
         now = datetime.now()
         timestamp = now.strftime("%A %d/%m/%Y, %H:%M:%S")
         for i in range(0, int(data['quantity'])):
             id = str(uuid.uuid4())
             url = generate_url(id)
-            csv += "%s\n" % url
+            writer.writerow([url])
             img_str = generate_qr(url)
             qrs.append({"image": img_str, "url": url, "type": asset_type})
             asset_database[id] = { "id": id, "type": asset_type, "description": "Generated on %s" % timestamp}
+        csv_string = csv_data.getvalue()
         with open(database_path, 'w') as f:
             f.write(json.dumps(asset_database, indent='\t'))
-        return render_template('qr-batch.html', base_url=base_url, qrs=qrs, csv=csv)
+        return render_template('qr-batch.html', base_url=base_url, qrs=qrs, csv=csv_string)
     
 @app.route('/assets/<uuid>')
 def asset(uuid):
