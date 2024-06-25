@@ -8,6 +8,9 @@
 
 ## Add QR scanning view
  * QR codes
- * barcodes
+ * barcodes? Not in this library
+
+## Authentication using SMS
+ * usermixin
 
 ## Add create pick list

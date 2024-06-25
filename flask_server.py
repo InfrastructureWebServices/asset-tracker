@@ -4,7 +4,7 @@ import os
 from os import path
 import json
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 import qrcode
 import uuid
 import base64
@@ -12,12 +12,11 @@ import csv
 from io import BytesIO, StringIO
 
 
-# import xml.etree.ElementTree as ET
-# import threading
-# import queue
-# from time import sleep
-# import sys
-# import re
+from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()
+from model.model import *
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_required, login_user
 
 load_dotenv('.env')
 
@@ -30,6 +29,27 @@ if not path.exists(database_path):
 
 # flask app
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['SQLALCHEMY_DATABASE_URI']
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.login_view = '/login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    # since the user_id is just the primary key of our user table, use it in the query for the user
+    return User.query.get(int(user_id))
+
+with app.app_context():
+#     db.create_all()
+    if db.session.query(User).count() == 0:
+        new_user = User(email="brendan.horne@outlook.com", name="Brendan Horne", password=generate_password_hash("test123abc", method='sha256'))
+        db.session.add(new_user)
+        # add the new user to the database
+        db.session.commit()
+
 base_url = "/private/asset-tracker/"
 domain = 'https://www.infrastructurewebservices.com/private/asset-tracker/'
 
@@ -60,15 +80,58 @@ def generate_qr(url):
     img_str = '<img height="120px" width="120px" src="data:image/png;base64,%s" />' % base64_utf8
     return img_str
 
+
+phone_sessions = {
+    
+}
+
 @app.route('/')
+@login_required
 def home():
     return render_template('dashboard.html', base_url=base_url)
 
+@app.route('/login')
+def login():
+    return render_template('login.html', base_url=base_url)
+
+@app.route('/generate-sms-code', methods=["POST"])
+def genenerate_sms_code():
+    data = request.form
+    from sms import send_sms
+    import secrets
+    code = secrets.token_hex(3)
+    mobile_number = "+61%s" % (data['mobile_number'])
+    phone_sessions[mobile_number] = {
+        "code": code, "ts": datetime.now()
+    }
+    send_sms(mobile_number, code)
+    return redirect('/verify-sms-code/%s' %(data['mobile_number']))
+
+@app.route('/verify-sms-code/<mobile_number>', methods=["GET", "POST"])
+def verify_sms_code(mobile_number):
+    if request.method == "GET":
+        return render_template('verify-sms-code.html', base_url=base_url, mobile_number=mobile_number)
+    else:
+        mobile_number = "+61%s" % (mobile_number)
+        data = request.form
+        verification_code = data['verification_code']
+        now = datetime.now()
+        if mobile_number in phone_sessions:
+            session = phone_sessions[mobile_number]
+            if verification_code == session['code'] and (now - session['ts'] < timedelta(minutes=5)):
+                user = User.query.filter_by(email="brendan.horne@outlook.com").first()
+                login_user(user, remember=True)
+                del phone_sessions[mobile_number] # don't allow code to be shared
+                return redirect('/')
+        return render_template('verify-sms-code.html', base_url=base_url, mobile_number=mobile_number, error_message="Invalid code!")
+
 @app.route('/scanner')
+@login_required
 def scanner():
     return render_template('scanner.html', base_url=base_url)
 
 @app.route('/show-database')
+@login_required
 def show_database():
     with open(database_path, 'r') as f:
         asset_database = json.loads(f.read())
@@ -81,6 +144,7 @@ def show_database():
     return render_template('show-database.html', base_url=base_url, asset_database=asset_database)
 
 @app.route('/generate-qr-batch', methods=['GET', 'POST'])
+@login_required
 def generate_qr_batch():
     if request.method == "GET":
         return render_template('generate.html', base_url=base_url)
@@ -108,6 +172,7 @@ def generate_qr_batch():
         return render_template('qr-batch.html', base_url=base_url, qrs=qrs, csv=csv_string)
     
 @app.route('/assets/<uuid>')
+@login_required
 def asset(uuid):
     with open(database_path, 'r') as f:
         asset_database = json.loads(f.read())
@@ -121,6 +186,7 @@ def asset(uuid):
         return render_template('asset.html', base_url=base_url, asset_data=None)
     
 @app.route('/assets/update/<uuid>', methods=['POST'])
+@login_required
 def update_asset(uuid):
     with open(database_path, 'r') as f:
         asset_database = json.loads(f.read())

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Login</title>
+    {% include 'headers.html' %}
+</head>
+
+<body>
+    <div class="container">
+        <div class="section">
+            <h1>Login</h1>
+        </div>
+        <div class="section">
+            <form method="POST" action="/generate-sms-code">
+                <div class="field">
+                    <div class="control">
+                        <label>Enter Australian Mobile Number after +61</label>
+                        <input class="input is-large" type="tel" pattern="4[0-9]{8}" name="mobile_number" placeholder="" autofocus="" autocomplete="off">
+                    </div>
+                </div>
+                <button class="button is-block is-info is-large is-fullwidth">Get Code</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
