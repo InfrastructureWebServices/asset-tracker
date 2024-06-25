@@ -64,6 +64,10 @@ def generate_qr(url):
 def home():
     return render_template('dashboard.html', base_url=base_url)
 
+@app.route('/scanner')
+def scanner():
+    return render_template('scanner.html', base_url=base_url)
+
 @app.route('/show-database')
 def show_database():
     with open(database_path, 'r') as f:
