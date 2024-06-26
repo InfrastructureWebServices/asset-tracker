@@ -21,7 +21,36 @@
                 <label for="id" >ID</label>
                 <span class="supporting-text">Unique ID</span>
             </div>
-            {% include 'itc-hardware.html' %}
+            <div class="col s12 m6 input-field">
+                <input id="name" name="name" type="text" value="{% if asset.name %}{{ asset.name}}{% endif %}">
+                <label for="name">Name</label>
+                <span class="supporting-text">Name of the equipment</span>
+            </div>
+            <div class="col s12 m6 input-field">
+                <input id="manufacturer" name="manufacturer" type="text" value="{% if asset.manufacturer %}{{asset.manufacturer}}{% endif %}">
+                <label for="manufacturer">Manufacturer</label>
+                <span class="supporting-text"></span>
+            </div>
+            <div class="col s12 m6 input-field">
+                <input id="part-number" name="part_number" type="text" value="{% if asset.part_number %}{{asset.part_number}}{% endif %}">
+                <label for="part-number">Part Number</label>
+                <span class="supporting-text">Provided by manufacturer</span>
+            </div>
+            <div class="col s12 m6 input-field">
+                <input id="serial-number" name="serial_number" type="text" value="{% if asset.serial_number %}{{asset.serial_number}}{% endif %}">
+                <label for="serial-number">Serial Number</label>
+                <span class="supporting-text">Provided by manufacturer</span>
+            </div>
+            <div class="col s12 m6 input-field">
+                <input id="owner" name="owner" type="text" value="{% if asset.owner %}{{asset.owner}}{% endif %}">
+                <label for="owner">Owner</label>
+                <span class="supporting-text">Or responsible person</span>
+            </div>
+            <div class="col s12 m6 input-field">
+                <input id="location" name="location" type="text" value="{% if asset.location %}{{asset.location}}{% endif %}">
+                <label for="location">Location</label>
+                <span class="supporting-text">Address and description of location</span>
+            </div>
             <div class="col s12 m12">
                 <button class="btn waves-effect waves-light" type="submit">Update</button>
             </div>
