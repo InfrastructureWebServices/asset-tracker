@@ -23,7 +23,7 @@
             <tbody>
                 {% for asset in assets %}
                 <tr>
-                    <td>{{ generate_qr(asset.id)|safe }}</td>
+                    <td>{{ generate_qr(generate_url(asset.id))|safe }}</td>
                     <td><a href="{{ generate_url(asset.id) }}">Link</a></td>
                     <td>{{asset.name}}</td>
                 </tr>

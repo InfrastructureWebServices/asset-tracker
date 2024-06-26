@@ -104,8 +104,8 @@ def genenerate_sms_code():
         session.add(new_verification_session)
         session.commit()
 
-    # send_sms(full_mobile_number, code) # don't waste trial sms calls, save for demo
-    print("code", code)
+    send_sms(full_mobile_number, code) # don't waste trial sms calls, save for demo
+    # print("code", code)
     return redirect('/verify-sms-code/%s' %(data['mobile_number']))
 
 def user_exists(full_mobile_number):
