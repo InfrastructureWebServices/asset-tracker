@@ -107,7 +107,7 @@ def genenerate_sms_code():
 
     send_sms(full_mobile_number, code) # don't waste trial sms calls, save for demo
     # print("code", code)
-    return redirect('/verify-sms-code/%s' %(data['mobile_number']))
+    return redirect('%sverify-sms-code/%s' %(base_url, data['mobile_number']))
 
 def user_exists(full_mobile_number):
     return User.query.filter_by(mobile_number=full_mobile_number).count() > 0
@@ -139,7 +139,7 @@ def verify_sms_code(mobile_number):
                 user = User.query.filter_by(mobile_number=full_mobile_number).first()
                 login_user(user, remember=True)
                 Verification_Session.query.filter_by(id=verification_session.id).delete()
-                return redirect('/')
+                return redirect('%s' % base_url)
         return render_template('verify-sms-code.html', base_url=base_url, mobile_number=mobile_number, error="Invalid or expired code!")
 
 @app.route('/scanner')
@@ -207,5 +207,5 @@ def update_asset(uuid_str):
                 session.add(change_log)
                 setattr(asset, property, data[property])
         session.commit()
-        return redirect('/assets/%s' % uuid_str)
+        return redirect('%sassets/%s' % (base_url, uuid_str))
 
