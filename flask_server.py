@@ -136,7 +136,7 @@ def verify_sms_code(mobile_number):
                         session.add(user)
                         session.commit()
                 user = User.query.filter_by(mobile_number=full_mobile_number).first()
-                login_user(user, remember=True)
+                login_user(user, remember=True, duration=timedelta(days=30))
                 Verification_Session.query.filter_by(id=verification_session.id).delete()
                 return redirect('%s' % base_url)
         return render_template('verify-sms-code.html', base_url=base_url, mobile_number=mobile_number, error="Invalid or expired code!")
