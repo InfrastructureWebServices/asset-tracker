@@ -22,7 +22,7 @@
                         <label>Enter the code sent in the sms within 3 minutes</label>
                         {% endif %}
                         <input class="input is-large" type="text" pattern="[a-z0-9]{6}" name="verification_code" placeholder="" autofocus="" autocomplete="off">
-                        {% if not user_exists %}
+                        {% if not existing_user %}
                         <label>First Name</label>
                         <input class="input is-large" type="text" name="first_name" autocomplete="off">
                         <label>Last Name</label>
