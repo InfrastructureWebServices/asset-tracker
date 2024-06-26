@@ -21,6 +21,14 @@ from uuid import UUID as UUIDC, uuid4
 from model.model import *
 
 load_dotenv('.env')
+base_url = "/private/asset-tracker/"
+domain = 'https://www.infrastructurewebservices.com/private/asset-tracker/'
+
+# debug variable dependents
+DEBUG = os.environ.get('DEBUG') != None and os.environ.get('DEBUG') == 'true'
+if DEBUG:
+    base_url = "/"
+    domain = "http://localhost:5000/"
 
 directory = path.dirname(__file__)
 
@@ -29,10 +37,13 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['SQLALCHEMY_DATABASE_URI']
 db.init_app(app)
+if DEBUG:
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
 
 # login manager
 login_manager = LoginManager()
-login_manager.login_view = '/login'
+login_manager.login_view = '%slogin' % base_url
 login_manager.init_app(app)
 
 @login_manager.user_loader
@@ -45,16 +56,6 @@ database_path = path.join(directory, 'db.sqlite')
 if not path.exists(database_path):
     with app.app_context():
         db.create_all()
-
-base_url = "/private/asset-tracker/"
-domain = 'https://www.infrastructurewebservices.com/private/asset-tracker/'
-
-# debug variable dependents
-DEBUG = os.environ.get('DEBUG') != None and os.environ.get('DEBUG') == 'true'
-if DEBUG:
-    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-    base_url = "/"
-    domain = "http://localhost:5000/"
 
 @app.route('/favicon.ico')
 def favicon():
