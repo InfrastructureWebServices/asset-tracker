@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from zoneinfo import ZoneInfo
 from datetime import datetime, timezone, timedelta
 import qrcode
-import uuid
 import base64
 import csv
 from io import BytesIO, StringIO
@@ -183,9 +182,9 @@ def generate_qr_batch():
 @login_required
 def asset(uuid_str):
     with SessionFactory() as session:
-        uuid = UUIDC(uuid_str)
-        asset = session.query(Asset).get(uuid)
-        change_logs = session.query(Change_Log).filter_by(asset_id=uuid).all()
+        asset_id = UUIDC(uuid_str)
+        asset = session.query(Asset).get(asset_id)
+        change_logs = session.query(Change_Log).filter_by(asset_id=asset_id).all()
         if asset != None:
             return render_template('equipment.html', base_url=base_url, asset=asset, change_logs=change_logs)
         else: 
@@ -195,15 +194,15 @@ def asset(uuid_str):
 @login_required
 def update_asset(uuid_str):
     data = request.form
-    uuid = UUIDC(uuid_str)
+    asset_id = UUIDC(uuid_str)
     change_log_str = ""
     with SessionFactory() as session:
-        asset = session.query(Asset).get(uuid)
+        asset = session.query(Asset).get(asset_id)
         for property in data:
             if data[property] != getattr(asset, property):
                 if data[property] == '' and getattr(asset, property) == None: continue
                 change_log_str = "%s (%s -> %s)" % (property, getattr(asset, property), data[property])
-                change_log = Change_Log(user_id=current_user.id, value=change_log_str, asset_id=uuid)
+                change_log = Change_Log(user_id=current_user.id, value=change_log_str, asset_id=asset_id)
                 session.add(change_log)
                 setattr(asset, property, data[property])
         session.commit()

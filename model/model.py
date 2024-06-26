@@ -7,8 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 from sqlalchemy.schema import Identity
 from flask_sqlalchemy import SQLAlchemy
-import uuid
-
+from uuid import uuid4
 
 engine = create_engine(environ['SQLALCHEMY_DATABASE_URI'], echo=True)
 SessionFactory = sessionmaker(engine)
@@ -33,7 +32,7 @@ class Verification_Session(db.Model):
 
 class Asset(db.Model):
     __tablename__ = "assets"
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name: Mapped[String] = mapped_column(String, nullable=True)
     manufacturer: Mapped[String] = mapped_column(String, nullable=True)
     part_number: Mapped[String] = mapped_column(String, nullable=True)
