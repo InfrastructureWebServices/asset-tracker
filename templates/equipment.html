@@ -14,10 +14,10 @@
         <div class="divider"></div>
         <h3>Details</h3>
         <div class="divider"></div>
-        {% if asset_data %}
-        <form class="row" action="./update/{{asset_data.id}}" method="post">
+        {% if asset %}
+        <form class="row" action="./{{asset.id}}/update" method="post">
             <div class="col s12 m6 input-field">
-                <input id="id" name="id" type="text" value="{{asset_data.id}}" disabled>
+                <input id="id" name="id" type="text" value="{{asset.id}}" disabled>
                 <label for="id" >ID</label>
                 <span class="supporting-text">Unique ID</span>
             </div>
@@ -27,13 +27,16 @@
             </div>
         </form>
         <div class="divider"></div>
-        <h3>Comments</h3>
-        <div class="divider"></div>
         <h3>Version History</h3>
+        <ul class="collection">
+        {% for log in change_logs %}
+            <li class="collection-item">
+                <b>User: </b>{{log.user_id}} - <b>Change: </b>{{log.value}}
+            </li>    
+        {% endfor %}
+        </ul>
         <div class="divider"></div>
         <h3>Scan Log</h3>
-        <div class="divider"></div>
-        <h3>Drawings</h3>
         <div class="divider"></div>
         <h3>Photos</h3>
         <div class="divider"></div>

@@ -17,11 +17,17 @@
                 <div class="field">
                     <div class="control">
                         {% if error %}
-                        <label><span style="text-color: red;">Enter the code sent in the sms within 60 seconds</span></label>
+                        <label><span style="color: red;">{{error}}</span></label>
                         {% else %}
-                        <label>Enter the code sent in the sms within 60 seconds</label>
+                        <label>Enter the code sent in the sms within 3 minutes</label>
                         {% endif %}
                         <input class="input is-large" type="text" pattern="[a-z0-9]{6}" name="verification_code" placeholder="" autofocus="" autocomplete="off">
+                        {% if not user_exists %}
+                        <label>First Name</label>
+                        <input class="input is-large" type="text" name="first_name" autocomplete="off">
+                        <label>Last Name</label>
+                        <input class="input is-large" type="text" name="last_name" autocomplete="off">
+                        {% endif %}
                     </div>
                 </div>
                 <button class="button is-block is-info is-large is-fullwidth">Submit Code</button>

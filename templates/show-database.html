@@ -21,11 +21,11 @@
                 </tr>
             </thead>
             <tbody>
-                {% for asset in asset_database %}
+                {% for asset in assets %}
                 <tr>
-                    <td>{{asset_database[asset].qr|safe}}</td>
-                    <td><a href="{{ asset_database[asset].url }}">Link</a></td>
-                    <td>{{asset_database[asset].name}}</td>
+                    <td>{{ generate_qr(asset.id)|safe }}</td>
+                    <td><a href="{{ generate_url(asset.id) }}">Link</a></td>
+                    <td>{{asset.name}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
