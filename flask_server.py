@@ -41,7 +41,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # check database json exists, if not create it
-database_path = path.join(directory, 'instance', 'db.sqlite')
+database_path = path.join(directory, 'db.sqlite')
 if not path.exists(database_path):
     with app.app_context():
         db.create_all()
