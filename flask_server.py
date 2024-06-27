@@ -1,20 +1,17 @@
 # modules
-from flask import Flask, request, Response, redirect, send_from_directory, render_template, send_file, jsonify
+from flask import Flask, request, redirect, send_from_directory, render_template
 import os
 from os import path
-import json
 from dotenv import load_dotenv
-from zoneinfo import ZoneInfo
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 import qrcode
 import base64
 import csv
 from io import BytesIO, StringIO
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_required, login_user, current_user
 import pytz
 import calendar
-from uuid import UUID as UUIDC, uuid4
+from uuid import UUID as UUIDC
 
 # local modules
 from model.model import *
@@ -33,12 +30,11 @@ directory = path.dirname(__file__)
 
 # flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+app.config['SECRET_KEY'] = os.environ['FLASK_SECRET_KEY']
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['SQLALCHEMY_DATABASE_URI']
 db.init_app(app)
 if DEBUG:
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-
 
 # login manager
 login_manager = LoginManager()
@@ -104,8 +100,8 @@ def genenerate_sms_code():
         session.add(new_verification_session)
         session.commit()
 
-    send_sms(full_mobile_number, code) # don't waste trial sms calls, save for demo
-    # print("code", code)
+    # send_sms(full_mobile_number, code) # don't waste trial sms calls, save for demo
+    print("code", code)
     return redirect('%sverify-sms-code/%s' %(base_url, data['mobile_number']))
 
 def user_exists(full_mobile_number):
@@ -139,7 +135,7 @@ def verify_sms_code(mobile_number):
                 login_user(user, remember=True, duration=timedelta(days=30))
                 Verification_Session.query.filter_by(id=verification_session.id).delete()
                 return redirect('%s' % base_url)
-        return render_template('verify-sms-code.html', base_url=base_url, mobile_number=mobile_number, error="Invalid or expired code!")
+        return render_template('verify-sms-code.html', base_url=base_url, mobile_number=mobile_number, existing_user=user_exists(full_mobile_number), error="Invalid or expired code!")
 
 @app.route('/scanner')
 @login_required

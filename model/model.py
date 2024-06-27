@@ -1,8 +1,8 @@
 from os import environ
 from flask_login import UserMixin
 from sqlalchemy import Boolean, Integer, String, DateTime, UUID
-from sqlalchemy import create_engine, MetaData, text, insert, Table
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 from sqlalchemy.schema import Identity
