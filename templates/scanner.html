@@ -4,30 +4,19 @@
     <meta charset="UTF-8">
     {% include 'headers.html' %}
     <title>QR Scanner Demo</title>
-    {#
-    <script src="moz-extension://41e45217-1123-433d-8f10-3c69a802bc92/assets/prompt.js"></script>
-    #}
+
+    {% include 'floating-action-button.html' %}
 
     <link href="./public/css/scanner.css" rel="stylesheet">
 
 </head>
 <body>
-    <div class="container">
+    <div class="container" style="display: none;">
         <div class="section">
             <h1>Scan</h1>
         </div>
         <div class="section">
-            <div id="video-container">
-                <video id="qr-video"></video>
-                <div style="position: absolute; display: none; pointer-events: none;" class="scan-region-highlight">
-                    <svg class="scan-region-highlight-svg" viewBox="0 0 238 238" preserveAspectRatio="none" style="position:absolute; width:100%; height:100%; left:0; top:0; fill:none; stroke:#e9b213; stroke-width:4; stroke-linecap:round; stroke-linejoin:round;">
-                        <path d="M31 2H10a8 8 0 0 0-8 8v21M207 2h21a8 8 0 0 1 8 8v21m0 176v21a8 8 0 0 1-8 8h-21m-176 0H10a8 8 0 0 1-8-8v-21"></path>
-                    </svg>
-                    <svg class="code-outline-highlight" preserveAspectRatio="none" style="display:none; width:100%; height:100%; fill:none; stroke:#e9b213; stroke-width:5; stroke-dasharray:25; stroke-linecap:round; stroke-linejoin:round;">
-                        <polygon></polygon>
-                    </svg>
-                </div>
-            </div>
+
         </div>
         {#
         <div class="section">
@@ -84,7 +73,6 @@
             <button id="start-button">Start</button>
             <button id="stop-button">Stop</button>
         </div>
-        {#
         <div class="divider"></div>
         <div class="section">
             <h1>Scan from File:</h1>
@@ -92,9 +80,26 @@
             <b>Detected QR code: </b>
             <span id="file-qr-result">None</span>
         </div>
-        #}
     </div>
-    <script type="module">
+    <div id="video-container">
+        <video id="qr-video"></video>
+        <div style="position: absolute; display: none; pointer-events: none;" class="scan-region-highlight"></div>
+    </div>
+    <div class="fixed-action-btn click-to-toggle">
+        <a class="btn-floating btn-large">
+            <span id="scan-count" class="badge"></span>
+        </a>
+        <ul>
+            <li id="start-scanner-button"><a class="btn-floating blue" onclick="startScanner();"><i class="material-icons">photo_camera</i></a></li>
+            <li id="send-to-picklist-button" style="display: none;"><a class="btn-floating blue"><i class="material-icons">local_shipping</i></a></li>
+            <li id="flip-camera-button" style="display: none;"><a class="btn-floating blue" onclick="toggleCameras();"><i class="material-icons">flip_camera_ios</i></a></li>
+            <li id="stop-scanner-button" style="display: none;"><a class="btn-floating green" onclick="stopScanner();"><i class="material-icons">check</i></a></li>
+        </ul>
+    </div>
+    {% include 'pixabay.html' %}
+
+    <script type="module">     
+
         import QrScanner from "./public/js/qr-scanner.min.js";
 
         const video = document.getElementById('qr-video');
@@ -116,6 +121,7 @@
             console.log(result.data);
             label.textContent = result.data;
             if (unique_scanned_items.indexOf(result.data) < 0) { 
+                camera_shutter_sound.play();
                 unique_scanned_items.push(result.data);
                 let new_item = document.createElement('li');
                 let anchor = document.createElement('a');
@@ -124,7 +130,10 @@
                 anchor.textContent = result.data;
                 new_item.appendChild(anchor);
                 scanList.appendChild(new_item);
+                document.getElementById('scan-count').textContent = String(unique_scanned_items.length);
             }
+            document.getElementById('send-to-picklist-button').style.display = 'inline-block';
+
             camQrResultTimestamp.textContent = new Date().toString();
             label.style.color = 'teal';
             clearTimeout(label.highlightTimeout);
@@ -149,24 +158,51 @@
             });
         };
 
-        scanner.start().then(() => {
-            updateFlashAvailability();
-            // List cameras after the scanner started to avoid listCamera's stream and the scanner's stream being requested
-            // at the same time which can result in listCamera's unconstrained stream also being offered to the scanner.
-            // Note that we can also start the scanner after listCameras, we just have it this way around in the demo to
-            // start the scanner earlier.
-            QrScanner.listCameras(true).then(cameras => cameras.forEach(camera => {
-                const option = document.createElement('option');
-                option.value = camera.id;
-                option.text = camera.label;
-                camList.add(option);
-            }));
-        });
+        window.active_camera = 0;
+
+        const toggleCameras = () => {
+            active_camera += 1
+            active_camera = (active_camera % cameras.length)
+            scanner.setCamera(cameras[active_camera].id).then(updateFlashAvailability);
+        }
+        window.toggleCameras = toggleCameras;
+
+        const startScanner = () => { 
+            scanner.start().then(() => {
+                updateFlashAvailability();
+                // List cameras after the scanner started to avoid listCamera's stream and the scanner's stream being requested
+                // at the same time which can result in listCamera's unconstrained stream also being offered to the scanner.
+                // Note that we can also start the scanner after listCameras, we just have it this way around in the demo to
+                // start the scanner earlier.
+                QrScanner.listCameras(true).then(cameras => {
+                    window.cameras = cameras;
+                    if (cameras.length > 1) {
+                        document.getElementById('flip-camera-button').style.display = 'inline-block';
+                    }
+                });
+                document.getElementById('start-scanner-button').style.display = 'none';
+                document.getElementById('stop-scanner-button').style.display = 'inline-block';
+                // fixed_action_button.close();
+            });
+        }
+        window.startScanner = startScanner;
+
+        const stopScanner = () => {
+            scanner.stop();
+            document.getElementById('stop-scanner-button').style.display = 'none';
+            document.getElementById('send-to-picklist-button').style.display = 'none';
+            document.getElementById('flip-camera-button').style.display = 'none';
+            document.getElementById('start-scanner-button').style.display = 'inline-block';
+            fixed_action_button.close();
+        }
+        window.stopScanner = stopScanner;
 
         QrScanner.hasCamera().then(hasCamera => camHasCamera.textContent = hasCamera);
 
         // for debugging
         window.scanner = scanner;
+
+
 
         {#
         document.getElementById('scan-region-highlight-style-select').addEventListener('change', (e) => {
@@ -195,7 +231,7 @@
         });
 
         document.getElementById('start-button').addEventListener('click', () => {
-            scanner.start();
+            startScanner();
         });
 
         document.getElementById('stop-button').addEventListener('click', () => {

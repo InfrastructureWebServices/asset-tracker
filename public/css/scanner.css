@@ -1,7 +1,3 @@
-div {
-    margin-bottom: 16px;
-}
-
 #video-container {
     line-height: 0;
 }
@@ -40,4 +36,9 @@ hr {
 input[type="file"] {
     display: block;
     margin-bottom: 16px;
+}
+
+#qr-video { 
+    width: 100%;
+    height: 100%;
 }
