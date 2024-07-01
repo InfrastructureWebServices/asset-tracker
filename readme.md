@@ -47,8 +47,11 @@
  * mandatory first and last name fields in verify SMS code
  * login after first, hide these fields
 
+
 ## Options for future development
  * Track changes log
  * admin controls
  * Photos
  * Add create pick list
+ * Add location setting for users when they start a new session
+ * Add json query paramater to asset database to pass information to the UI

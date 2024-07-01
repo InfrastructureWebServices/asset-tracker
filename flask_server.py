@@ -1,6 +1,8 @@
 # modules
-from flask import Flask, request, redirect, send_from_directory, render_template
+from flask import Flask, request, redirect, send_from_directory, render_template, jsonify, Response
+import json
 import os
+from copy import deepcopy
 from os import path
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
@@ -173,7 +175,15 @@ def generate_qr_batch():
                 qrs.append({"image": img_str, "url": url, "type": asset_type})
             csv_string = csv_data.getvalue()
             return render_template('qr-batch.html', base_url=base_url, qrs=qrs, csv=csv_string)
-    
+
+@app.route('/generate-pick-list', methods=['POST'])
+@login_required
+def generate_pick_list():
+    data = request.json
+    with open('picking_slip.json', 'w') as f:
+        f.write(json.dumps(data))
+    return Response('', status=200)
+
 @app.route('/assets/<uuid_str>')
 @login_required
 def asset(uuid_str):
@@ -182,9 +192,15 @@ def asset(uuid_str):
         asset = session.query(Asset).get(asset_id)
         change_logs = session.query(Change_Log).filter_by(asset_id=asset_id).all()
         if asset != None:
-            return render_template('equipment.html', base_url=base_url, asset=asset, change_logs=change_logs)
+            if request.headers.get('Content-Type') == 'application/json':
+                return jsonify(asset.serialize())
+            else:
+                return render_template('equipment.html', base_url=base_url, asset=asset, change_logs=change_logs)
         else: 
-            return render_template('404.html', base_url=base_url)
+            if request.headers.get('Content-Type') == 'application/json':
+                return jsonify({"error": "Not Found"})
+            else:
+                return render_template('404.html', base_url=base_url)
         
 @app.route('/assets/<uuid_str>/update', methods=['POST'])
 @login_required
@@ -203,4 +219,3 @@ def update_asset(uuid_str):
                 setattr(asset, property, data[property])
         session.commit()
         return redirect('%sassets/%s' % (base_url, uuid_str))
-

@@ -11,90 +11,35 @@
 
 </head>
 <body>
-    <div class="container" style="display: none;">
-        <div class="section">
-            <h1>Scan</h1>
-        </div>
-        <div class="section">
-
-        </div>
-        {#
-        <div class="section">
-            <div>
-                <label>
-                    Highlight Style
-                    <select id="scan-region-highlight-style-select">
-                        <option value="default-style">Default style</option>
-                        <option value="example-style-1">Example custom style 1</option>
-                        <option value="example-style-2">Example custom style 2</option>
-                    </select>
-                </label>
-                <label>
-                    <input id="show-scan-region" type="checkbox">
-                    Show scan region canvas
-                </label>
-            </div>
-        </div>
-        #}
-        <div class="section">
-            <div>
-                <select id="inversion-mode-select">
-                    <option value="original">Scan original (dark QR code on bright background)</option>
-                    <option value="invert">Scan with inverted colors (bright QR code on dark background)</option>
-                    <option value="both">Scan both</option>
-                </select>
-                <br>
-            </div>
-            <b>Device has camera: </b>
-            <span id="cam-has-camera"></span>
-            <br>
-            <div>
-                <b>Preferred camera:</b>
-                <select id="cam-list">
-                    <option value="environment" selected="">Environment Facing (default)</option>
-                    <option value="user">User Facing</option>
-                </select>
-            </div>
-            <b>Camera has flash: </b>
-            <span id="cam-has-flash"></span>
-            <div>
-                <button id="flash-toggle">📸 Flash: <span id="flash-state">off</span></button>
-            </div>
-            <br>
-            <b>Detected QR code: </b>
-            <span id="cam-qr-result">None</span>
-            <br>
-            <b>Last detected at: </b>
-            <span id="cam-qr-result-timestamp"></span>
-            <br>
-            <ul id="scan-list">
-            </ul>
-            <br>
-            <button id="start-button">Start</button>
-            <button id="stop-button">Stop</button>
-        </div>
-        <div class="divider"></div>
-        <div class="section">
-            <h1>Scan from File:</h1>
-            <input type="file" id="file-selector">
-            <b>Detected QR code: </b>
-            <span id="file-qr-result">None</span>
-        </div>
-    </div>
     <div id="video-container">
         <video id="qr-video"></video>
         <div style="position: absolute; display: none; pointer-events: none;" class="scan-region-highlight"></div>
+        <div id="progress-bar" class="progress" style="display: none;">
+            <div class="indeterminate"></div>
+        </div>
     </div>
     <div class="fixed-action-btn click-to-toggle">
         <a class="btn-floating btn-large">
+            <i class="material-icons">add</i>
             <span id="scan-count" class="badge"></span>
         </a>
         <ul>
+            <li id="flash-on-button" style="display: none;"><a class="btn-floating yellow" onclick="turnFlashOn();"><i class="material-icons">flash_on</i></a></li>
+            <li id="flash-off-button" style="display: none;"><a class="btn-floating yellow" onclick="turnFlashOff();"><i class="material-icons">flash_off</i></a></li>
             <li id="start-scanner-button"><a class="btn-floating blue" onclick="startScanner();"><i class="material-icons">photo_camera</i></a></li>
-            <li id="send-to-picklist-button" style="display: none;"><a class="btn-floating blue"><i class="material-icons">local_shipping</i></a></li>
+            <li id="send-to-picklist-button" style="display: none;"><a class="btn-floating green" onclick="sendPickList();"><i class="material-icons">send</i></a></li>
             <li id="flip-camera-button" style="display: none;"><a class="btn-floating blue" onclick="toggleCameras();"><i class="material-icons">flip_camera_ios</i></a></li>
             <li id="stop-scanner-button" style="display: none;"><a class="btn-floating green" onclick="stopScanner();"><i class="material-icons">check</i></a></li>
         </ul>
+    </div>
+    <div class="container">
+        <div class="section">
+            <ul id="pick-list-collection" class="collection with-header">
+                <li class="collection-header">
+                    Pick List
+                </li>
+            </ul>
+        </div>
     </div>
     {% include 'pixabay.html' %}
 
@@ -104,57 +49,101 @@
 
         const video = document.getElementById('qr-video');
         const videoContainer = document.getElementById('video-container');
-        const camHasCamera = document.getElementById('cam-has-camera');
-        const camList = document.getElementById('cam-list');
-        const camHasFlash = document.getElementById('cam-has-flash');
-        const flashToggle = document.getElementById('flash-toggle');
-        const flashState = document.getElementById('flash-state');
-        const camQrResult = document.getElementById('cam-qr-result');
-        const camQrResultTimestamp = document.getElementById('cam-qr-result-timestamp');
-        const fileSelector = document.getElementById('file-selector');
-        const fileQrResult = document.getElementById('file-qr-result');
         
-        const scanList = document.getElementById('scan-list');
+        const pick_list_ul = document.getElementById('pick-list-collection');
         let unique_scanned_items = [];
+        let unique_scanned_urls = [];
 
-        function setResult(label, result) {
-            console.log(result.data);
-            label.textContent = result.data;
-            if (unique_scanned_items.indexOf(result.data) < 0) { 
-                camera_shutter_sound.play();
-                unique_scanned_items.push(result.data);
-                let new_item = document.createElement('li');
-                let anchor = document.createElement('a');
-                anchor.setAttribute('href', result.data);
-                anchor.setAttribute('target', "_blank");
-                anchor.textContent = result.data;
-                new_item.appendChild(anchor);
-                scanList.appendChild(new_item);
-                document.getElementById('scan-count').textContent = String(unique_scanned_items.length);
+        function sendPickList() { 
+            try { 
+                let request = new XMLHttpRequest();
+                let data = null;
+                request.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        // Typical action to be performed when the document is ready:
+                        alert('ok');
+                    }
+                }
+                request.open("POST", "./generate-pick-list", false);
+                request.setRequestHeader('Content-Type', 'application/json');
+                request.send(JSON.stringify(unique_scanned_items));
+                
+            } catch(error) {
+                debugger;
+                return { "error": "Not supported" }
             }
-            document.getElementById('send-to-picklist-button').style.display = 'inline-block';
+        }
+        window.sendPickList = sendPickList;
 
-            camQrResultTimestamp.textContent = new Date().toString();
-            label.style.color = 'teal';
-            clearTimeout(label.highlightTimeout);
-            label.highlightTimeout = setTimeout(() => label.style.color = 'inherit', 100);
+        function getAssetData(url) { 
+            try { 
+                let request = new XMLHttpRequest();
+                let data = null;
+                request.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        // Typical action to be performed when the document is ready:
+                        data = JSON.parse(request.responseText);
+                    }
+                }
+                request.open("GET", url, false);
+                request.setRequestHeader('Content-Type', 'application/json');
+                request.send();
+                return data;
+            } catch(error) {
+                debugger;
+                return { "error": "Not supported" }
+            }
+
+        }
+
+        function addToPickList(url) { 
+            let asset_data = getAssetData(url);
+            if (!asset_data.error) {
+                unique_scanned_items.push(asset_data);
+                let new_item = document.createElement('li');
+                new_item.setAttribute('class', 'collection-item');
+                let id = document.createElement('span');
+                id.textContent = String(unique_scanned_items.length) + ": "
+                id.style['font-weight'] = 'bold';
+                let anchor = document.createElement('a');
+                anchor.setAttribute('href', url);
+                anchor.setAttribute('target', "_blank");
+                if (asset_data.name) { 
+                    anchor.textContent = asset_data.name;
+                } else { 
+                    anchor.textContent = asset_data.id;
+                }
+                new_item.appendChild(id);
+                new_item.appendChild(anchor);
+                pick_list_ul.appendChild(new_item);
+                document.getElementById('scan-count').textContent = String(unique_scanned_items.length);
+            } else { 
+                alert('Invalid QR Code!')
+            }
+        }
+
+        function setResult(result) {
+            document.getElementById('progress-bar').style.display = 'inline-block';
+            let url = result.data;
+            if (unique_scanned_urls.indexOf(url) < 0) { 
+                unique_scanned_urls.push(url);
+                camera_shutter_sound.play();
+                addToPickList(url);
+            }
+            document.getElementById('progress-bar').style.display = 'none';
         }
 
         // ####### Web Cam Scanning #######
 
-        const scanner = new QrScanner(video, result => setResult(camQrResult, result), {
-            onDecodeError: error => {
-                // camQrResult.textContent = error;
-                // camQrResult.style.color = 'inherit';
-            },
+        const scanner = new QrScanner(video, result => setResult(result), {
             highlightScanRegion: true,
             highlightCodeOutline: true,
         });
 
         const updateFlashAvailability = () => {
             scanner.hasFlash().then(hasFlash => {
-                camHasFlash.textContent = hasFlash;
-                flashToggle.style.display = hasFlash ? 'inline-block' : 'none';
+                // document.getElementById('flash-off-button').style.display = hasFlash ? 'inline-block' : 'none';
+                document.getElementById('flash-on-button').style.display = hasFlash ? 'inline-block' : 'none';
             });
         };
 
@@ -167,7 +156,8 @@
         }
         window.toggleCameras = toggleCameras;
 
-        const startScanner = () => { 
+        const startScanner = () => {
+            document.getElementById('video-container').setAttribute('class', 'active');
             scanner.start().then(() => {
                 updateFlashAvailability();
                 // List cameras after the scanner started to avoid listCamera's stream and the scanner's stream being requested
@@ -180,6 +170,7 @@
                         document.getElementById('flip-camera-button').style.display = 'inline-block';
                     }
                 });
+                document.getElementById('send-to-picklist-button').style.display = 'none';
                 document.getElementById('start-scanner-button').style.display = 'none';
                 document.getElementById('stop-scanner-button').style.display = 'inline-block';
                 // fixed_action_button.close();
@@ -188,16 +179,15 @@
         window.startScanner = startScanner;
 
         const stopScanner = () => {
+            document.getElementById('video-container').removeAttribute('class');
             scanner.stop();
             document.getElementById('stop-scanner-button').style.display = 'none';
-            document.getElementById('send-to-picklist-button').style.display = 'none';
             document.getElementById('flip-camera-button').style.display = 'none';
             document.getElementById('start-scanner-button').style.display = 'inline-block';
+            if (unique_scanned_items.length > 0) document.getElementById('send-to-picklist-button').style.display = 'inline-block';
             fixed_action_button.close();
         }
         window.stopScanner = stopScanner;
-
-        QrScanner.hasCamera().then(hasCamera => camHasCamera.textContent = hasCamera);
 
         // for debugging
         window.scanner = scanner;
@@ -218,6 +208,7 @@
         });
         #}
 
+        {#
         document.getElementById('inversion-mode-select').addEventListener('change', event => {
             scanner.setInversionMode(event.target.value);
         });
@@ -238,7 +229,6 @@
             scanner.stop();
         });
 
-        {#
         // ####### File Scanning #######
 
         fileSelector.addEventListener('change', event => {

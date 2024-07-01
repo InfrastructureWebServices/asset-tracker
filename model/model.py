@@ -40,6 +40,17 @@ class Asset(db.Model):
     location: Mapped[String] = mapped_column(String, nullable=True) # link to foreign table
     owner: Mapped[String] = mapped_column(String, nullable=True)
 
+    def serialize(self):
+        return { 
+            "id": self.id,
+            "name": self.name,
+            "manufacturer": self.manufacturer, 
+            "part_number": self.part_number,
+            "serial_number": self.serial_number,
+            "location": self.location,
+            "owner": self.owner
+        }
+
 class Comments(db.Model):
     __tablename__ = "asset_comments"
     id: Mapped[int] = mapped_column(Identity(always=True), primary_key=True)
