@@ -23,9 +23,9 @@
                 <span class="supporting-text">Unique ID</span>
             </div>
             <div class="col s12 m6 input-field">
-                <input id="name" name="name" type="text" value="{% if asset.name %}{{ asset.name}}{% endif %}">
-                <label for="name">Name</label>
-                <span class="supporting-text">Name of the equipment</span>
+                <input id="name" name="description" type="text" value="{% if asset.description %}{{ asset.description}}{% endif %}">
+                <label for="name">Description</label>
+                <span class="supporting-text">Description of the equipment</span>
             </div>
             <div class="col s12 m6 input-field">
                 <input id="manufacturer" name="manufacturer" type="text" value="{% if asset.manufacturer %}{{asset.manufacturer}}{% endif %}">
